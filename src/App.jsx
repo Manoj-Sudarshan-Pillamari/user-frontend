@@ -74,7 +74,7 @@ function App() {
     });
 
     return grouped;
-  }, []);
+  }, [contentList]);
 
   const groupedEntries = useMemo(() => {
     return Object?.entries(groupedData);
@@ -133,8 +133,6 @@ function App() {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
-
-  console.log("Content List:", contentList);
 
   return (
     <div className="page-container">
