@@ -40,7 +40,6 @@ const CustomCarousel = memo(({ data }) => {
       <Carousel autoplay={play && !isHovered} dots={false} autoplaySpeed={3000}>
         {data?.map((item, index) => (
           <div key={index}>
-            {console.log("urlurlurlurl", item)}
             <div
               className="carousel-slide"
               onClick={() => handleClick(item?.media?.url)}
