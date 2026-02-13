@@ -29,14 +29,14 @@ const CustomCarousel = memo(({ data }) => {
   useEffect(() => {
     if (timerRef?.current) {
       clearTimeout(timerRef?.current);
-      timerRef?.current = null;
+      timerRef.current = null;
     }
 
     if (!isVisible || isHovered || !data || data?.length <= 1) return;
 
     const currentSpeed = data[currentSlide]?.autoplaySpeed || 3000;
 
-    timerRef?.current = setTimeout(() => {
+    timerRef.current = setTimeout(() => {
       goToNext();
     }, currentSpeed);
 
