@@ -152,3 +152,7 @@
     line-height: 1.5;
   }
 }
+
+.carousel-dot-item.active {
+  background: #1d4ed8;
+}

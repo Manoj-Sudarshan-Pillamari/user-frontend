@@ -1,17 +1,17 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
 import "./App.css";
 import CustomCarousel from "./component/CustomCarousel";
-import data from "./data/data.json";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const ROWS = 2;
 
 function App() {
   const [contentList, setContentList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const [columns, setColumns] = useState(8);
+  const [columns, setColumns] = useState(7);
   const [slideDirection, setSlideDirection] = useState("right");
 
   const calculateColumns = useCallback(() => {
@@ -33,6 +33,7 @@ function App() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchBrands();
   }, []);
@@ -48,25 +49,29 @@ function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, [calculateColumns]);
 
-  const itemsPerPage = columns * 2;
+  const itemsPerPage = columns * ROWS;
 
   const groupedData = useMemo(() => {
-    const grouped = contentList?.reduce((acc, item) => {
-      acc[item.type] = acc[item.type] || [];
-      acc[item.type].push(item);
-      return acc;
-    }, {});
+    const grouped = {};
 
-    Object.keys(grouped)?.forEach((type) => {
-      grouped[type]?.sort((a, b) => {
-        const aPriority = a.priority === true;
-        const bPriority = b.priority === true;
+    contentList?.forEach((item) => {
+      const tileKey = item?.tile || 1;
+      if (!grouped[tileKey]) {
+        grouped[tileKey] = [];
+      }
+      grouped[tileKey]?.push(item);
+    });
+
+    Object.keys(grouped)?.forEach((tile) => {
+      grouped[tile]?.sort((a, b) => {
+        const aPriority = a?.priority === true;
+        const bPriority = b?.priority === true;
 
         if (aPriority && !bPriority) return -1;
         if (!aPriority && bPriority) return 1;
 
         if (aPriority && bPriority) {
-          return parseInt(a.rank) - parseInt(b.rank);
+          return parseInt(a?.rank) - parseInt(b?.rank);
         }
 
         return 0;
@@ -76,19 +81,21 @@ function App() {
     return grouped;
   }, [contentList]);
 
-  const groupedEntries = useMemo(() => {
-    return Object?.entries(groupedData);
+  const sortedTiles = useMemo(() => {
+    return Object?.entries(groupedData)?.sort(
+      ([a], [b]) => Number(a) - Number(b)
+    );
   }, [groupedData]);
 
   const totalPages = useMemo(() => {
-    return Math.ceil(groupedEntries?.length / itemsPerPage);
-  }, [groupedEntries.length, itemsPerPage]);
+    return Math.ceil(sortedTiles?.length / itemsPerPage);
+  }, [sortedTiles.length, itemsPerPage]);
 
   const currentItems = useMemo(() => {
     const start = currentPage * itemsPerPage;
     const end = start + itemsPerPage;
-    return groupedEntries?.slice(start, end);
-  }, [groupedEntries, currentPage, itemsPerPage]);
+    return sortedTiles?.slice(start, end);
+  }, [sortedTiles, currentPage, itemsPerPage]);
 
   const canScrollLeft = currentPage > 0;
   const canScrollRight = currentPage < totalPages - 1;
@@ -153,8 +160,8 @@ function App() {
               style={gridStyle}
               key={currentPage}
             >
-              {currentItems?.map(([type, items]) => (
-                <div className="tile" key={type}>
+              {currentItems?.map(([tile, items]) => (
+                <div className="tile" key={tile}>
                   <CustomCarousel data={items} />
                 </div>
               ))}

@@ -240,3 +240,8 @@ body {
     transform: translateX(0);
   }
 }
+.tiles-grid {
+  display: grid;
+  grid-template-rows: repeat(2, 1fr);
+  gap: 12px;
+}

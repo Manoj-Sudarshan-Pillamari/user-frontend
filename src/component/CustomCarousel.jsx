@@ -1,30 +1,54 @@
 import { Carousel } from "antd";
-import { memo, useRef, useEffect, useState } from "react";
+import { memo, useRef, useEffect, useState, useCallback } from "react";
 import "./CustomCarousel.css";
 
 const CustomCarousel = memo(({ data }) => {
   const ref = useRef(null);
-  const [play, setPlay] = useState(false);
+  const carouselRef = useRef(null);
+  const timerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => setPlay(entry.isIntersecting),
+      ([entry]) => setIsVisible(entry.isIntersecting),
       { threshold: 0.3 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
+  const goToNext = useCallback(() => {
+    if (!data || data?.length <= 1) return;
+    const nextSlide = (currentSlide + 1) % data?.length;
+    carouselRef?.current?.goTo(nextSlide);
+    setCurrentSlide(nextSlide);
+  }, [currentSlide, data]);
 
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
+  useEffect(() => {
+    if (timerRef?.current) {
+      clearTimeout(timerRef?.current);
+      timerRef?.current = null;
+    }
 
-  const handleClick = (url) => {
+    if (!isVisible || isHovered || !data || data?.length <= 1) return;
+
+    const currentSpeed = data[currentSlide]?.autoplaySpeed || 3000;
+
+    timerRef?.current = setTimeout(() => {
+      goToNext();
+    }, currentSpeed);
+
+    return () => {
+      if (timerRef?.current) {
+        clearTimeout(timerRef?.current);
+      }
+    };
+  }, [isVisible, isHovered, currentSlide, data, goToNext]);
+
+  const handleClick = (item) => {
+    const url = item?.link || item?.media?.url;
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
     }
@@ -34,24 +58,33 @@ const CustomCarousel = memo(({ data }) => {
     <div
       ref={ref}
       className="custom-carousel-wrapper"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <Carousel autoplay={play && !isHovered} dots={false} autoplaySpeed={3000}>
+      <Carousel
+        ref={carouselRef}
+        autoplay={false}
+        dots={false}
+        beforeChange={(_, next) => setCurrentSlide(next)}
+      >
         {data?.map((item, index) => (
           <div key={index}>
             <div
               className="carousel-slide"
-              onClick={() => handleClick(item?.media?.url)}
+              onClick={() => handleClick(item)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  handleClick(item?.media?.url);
+                if (e?.key === "Enter" || e?.key === " ") {
+                  handleClick(item);
                 }
               }}
             >
-              <img src={item?.media?.url} alt={item?.text} loading="lazy" />
+              <img
+                src={item?.media?.url}
+                alt={item?.brandName}
+                loading="lazy"
+              />
               <h4>{item?.brandName}</h4>
               <p>{item?.description}</p>
             </div>
@@ -61,7 +94,12 @@ const CustomCarousel = memo(({ data }) => {
       {data?.length > 1 && (
         <div className="carousel-dots">
           {data?.map((_, index) => (
-            <span key={index} className="carousel-dot-item" />
+            <span
+              key={index}
+              className={`carousel-dot-item ${
+                index === currentSlide ? "active" : ""
+              }`}
+            />
           ))}
         </div>
       )}
