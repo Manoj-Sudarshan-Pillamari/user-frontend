@@ -84,6 +84,7 @@ const CustomCarousel = memo(({ data }) => {
                 src={item?.media?.url}
                 alt={item?.brandName}
                 loading="lazy"
+                // style={{ height: "100%", width: "100%", objectFit: "cover" }}
               />
               <h4>{item?.brandName}</h4>
               <p>{item?.description}</p>
