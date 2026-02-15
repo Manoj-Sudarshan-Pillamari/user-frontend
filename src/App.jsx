@@ -126,7 +126,7 @@ function App() {
     const interval = setInterval(() => {
       setSlideDirection("right");
       setCurrentPage((prev) => (prev + 1) % totalPages);
-    }, 10000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [totalPages, currentPage]);
