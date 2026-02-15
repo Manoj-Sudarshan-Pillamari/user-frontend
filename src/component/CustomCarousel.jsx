@@ -80,12 +80,13 @@ const CustomCarousel = memo(({ data }) => {
                 }
               }}
             >
-              <img
-                src={item?.media?.url}
-                alt={item?.brandName}
-                loading="lazy"
-                // style={{ height: "100%", width: "100%", objectFit: "cover" }}
-              />
+              <div className="img-wrapper">
+                <img
+                  src={item?.media?.url}
+                  alt={item?.brandName}
+                  loading="lazy"
+                />
+              </div>
               <h4>{item?.brandName}</h4>
               <p>{item?.description}</p>
             </div>
