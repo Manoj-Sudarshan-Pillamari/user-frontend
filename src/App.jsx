@@ -1,9 +1,10 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import "./App.css";
 import CustomCarousel from "./component/CustomCarousel";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const LIVE_URL = `${API_URL}/live/now`;
 const ROWS = 2;
 
 function App() {
@@ -13,6 +14,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [columns, setColumns] = useState(7);
   const [slideDirection, setSlideDirection] = useState("right");
+  const [gridHeight, setGridHeight] = useState(null);
+  const gridRef = useRef(null);
 
   const calculateColumns = useCallback(() => {
     const width = window.innerWidth;
@@ -24,8 +27,9 @@ function App() {
 
   const fetchBrands = async () => {
     setLoading(true);
+    setError("");
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(LIVE_URL);
       setContentList(res?.data?.data);
     } catch (err) {
       setError("Failed to fetch data");
@@ -43,11 +47,30 @@ function App() {
       const newColumns = calculateColumns();
       setColumns(newColumns);
       setCurrentPage(0);
+      setGridHeight(null);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [calculateColumns]);
+
+  useEffect(() => {
+    if (!gridRef.current || gridHeight) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const height = entry.contentRect.height;
+        if (height > 0) {
+          setGridHeight(height);
+          observer.disconnect();
+        }
+      }
+    });
+
+    observer.observe(gridRef.current);
+
+    return () => observer.disconnect();
+  }, [currentPage, gridHeight, contentList]);
 
   const itemsPerPage = columns * ROWS;
 
@@ -82,7 +105,7 @@ function App() {
   }, [contentList]);
 
   const sortedTiles = useMemo(() => {
-    return Object?.entries(groupedData)?.sort(
+    return Object.entries(groupedData).sort(
       ([a], [b]) => Number(a) - Number(b)
     );
   }, [groupedData]);
@@ -129,7 +152,7 @@ function App() {
     }, 15000);
 
     return () => clearInterval(interval);
-  }, [totalPages, currentPage]);
+  }, [totalPages]);
 
   const gridStyle = useMemo(
     () => ({
@@ -139,7 +162,30 @@ function App() {
   );
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <p>{error}</p>
+        <button className="retry-button" onClick={fetchBrands}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (contentList?.length === 0) {
+    return (
+      <div className="page-container">
+        <div className="main-container">
+          <h2 className="main-title">Bonc Carousel App</h2>
+          <div className="empty-state">
+            <p>No active content available at the moment.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
@@ -154,8 +200,14 @@ function App() {
           >
             ‹
           </button>
-          <div className="content-area">
+          <div
+            className="content-area"
+            style={{
+              minHeight: gridHeight ? `${gridHeight}px` : "auto",
+            }}
+          >
             <div
+              ref={gridRef}
               className={`tiles-grid slide-${slideDirection}`}
               style={gridStyle}
               key={currentPage}
@@ -178,7 +230,7 @@ function App() {
         </div>
         {totalPages > 1 && (
           <div className="page-indicators">
-            {Array?.from({ length: totalPages }, (_, i) => (
+            {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
                 onClick={() => handleDotClick(i)}
