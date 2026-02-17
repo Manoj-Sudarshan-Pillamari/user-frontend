@@ -10,6 +10,9 @@ body {
 .page-container {
   min-height: 100vh;
   padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .main-container {
   background: linear-gradient(to bottom right, #f8fafc, #ffffff);
@@ -184,6 +187,7 @@ body {
 @media (max-width: 639px) {
   .page-container {
     padding: 6px;
+    gap: 10px;
   }
   .main-container {
     padding: 12px;
@@ -208,6 +212,9 @@ body {
   }
 }
 @media (min-width: 640px) and (max-width: 767px) {
+  .page-container {
+    gap: 12px;
+  }
   .tiles-grid {
     gap: 10px;
   }
@@ -216,6 +223,9 @@ body {
   }
 }
 @media (min-width: 768px) and (max-width: 1023px) {
+  .page-container {
+    gap: 14px;
+  }
   .main-container {
     padding: 20px;
   }
@@ -229,6 +239,7 @@ body {
 @media (min-width: 1024px) {
   .page-container {
     padding: 16px;
+    gap: 20px;
   }
   .main-container {
     padding: 24px;
