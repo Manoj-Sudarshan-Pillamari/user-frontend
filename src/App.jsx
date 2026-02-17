@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-import BrandCarousel from "./component/BrandCarousel";
+import BrandCarousel from "./component/BrandCarousel.jsx";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;

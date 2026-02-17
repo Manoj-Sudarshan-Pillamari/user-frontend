@@ -117,7 +117,6 @@ body {
   border-radius: 5px;
 }
 
-/* Error & Empty States */
 .error-container {
   display: flex;
   flex-direction: column;
